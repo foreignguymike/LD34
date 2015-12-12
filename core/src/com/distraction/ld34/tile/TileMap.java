@@ -1,9 +1,10 @@
 package com.distraction.ld34.tile;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.Vars;
@@ -53,10 +54,8 @@ public class TileMap {
 		
 		try {
 			
-			InputStream in = getClass().getResourceAsStream(s);
-			BufferedReader br = new BufferedReader(
-				new InputStreamReader(in)
-			);
+			FileHandle file = Gdx.files.internal(s);
+			BufferedReader br = file.reader(4096);
 			
 			// save file structure:
 			// <tileset path>
@@ -78,7 +77,7 @@ public class TileMap {
 			height = numRows * tileSize;
 			
 			String delims = "\\s+";
-			for(int row = 0; row < numRows; row++) {
+			for(int row = numRows - 1; row >= 0; row--) {
 				String line = br.readLine();
 				String[] tokens = line.split(delims);
 				for(int col = 0; col < numCols; col++) {
@@ -86,14 +85,14 @@ public class TileMap {
 					collision[row][col] = Integer.parseInt(tokens[col]);
 				}
 			}
-			for(int row = 0; row < numRows; row++) {
+			for(int row = numRows - 1; row >= 0; row--) {
 				String line = br.readLine();
 				String[] tokens = line.split(delims);
 				for(int col = 0; col < numCols; col++) {
 					collision[row][col] = Integer.parseInt(tokens[col]);
 				}
 			}
-			for(int row = 0; row < numRows; row++) {
+			for(int row = numRows - 1; row >= 0; row--) {
 				String line = br.readLine();
 				String[] tokens = line.split(delims);
 				for(int col = 0; col < numCols; col++) {
@@ -120,7 +119,9 @@ public class TileMap {
 		return collision[row][col];
 	}
 	
-	public void render(SpriteBatch sb) {
+	public void render(SpriteBatch sb, OrthographicCamera cam) {
+		rowOffset = (int) ((cam.position.y - cam.viewportHeight / 2) / tileSize);
+		colOffset = (int) ((cam.position.x - cam.viewportWidth / 2) / tileSize);
 		for(int row = rowOffset; row < rowOffset + numRowsToDraw; row++) {
 			if(row >= numRows) break;
 			for(int col = colOffset; col < colOffset + numColsToDraw; col++) {

@@ -9,8 +9,8 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.resizable = false;
-		config.width = Vars.WIDTH;
-		config.height = Vars.HEIGHT;
+		config.width = Vars.WIDTH * Vars.SCALE;
+		config.height = Vars.HEIGHT * Vars.SCALE;
 		config.title = Vars.TITLE;
 		new LwjglApplication(new LD34(), config);
 	}

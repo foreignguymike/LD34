@@ -3,6 +3,7 @@ package com.distraction.ld34.tile;
 import java.awt.Rectangle;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.util.Animation;
 
 
@@ -54,15 +55,22 @@ public abstract class MapObject {
 	protected boolean down;
 	
 	// movement attributes
-	protected double moveSpeed;
-	protected double maxSpeed;
-	protected double stopSpeed;
+	protected float moveSpeed;
+	protected float maxSpeed;
+	protected float stopSpeed;
 	
 	// constructor
 	public MapObject(TileMap tm) {
 		tileMap = tm;
 		tileSize = tm.getTileSize();
 		animation = new Animation();
+	}
+	
+	protected void setAnimation(TextureRegion[] images, float interval) {
+		animation.setImages(images);
+		animation.setInterval(interval);
+		width = images[0].getRegionWidth();
+		height = images[0].getRegionHeight();
 	}
 	
 	public boolean intersects(MapObject o) {
@@ -98,12 +106,12 @@ public abstract class MapObject {
 		);
 	}
 	
-	public void calculateCollision(double x, double y) {
+	private void calculateCollision(double x, double y) {
 		topCollision = leftCollision = rightCollision = bottomCollision = false;
 		int xl = (int) (x - cwidth / 2);
 		int xr = (int) (x + cwidth / 2 - 1);
-		int yt = (int) (y - cheight / 2);
-		int yb = (int) (y + cheight / 2 - 1);
+		int yt = (int) (y + cheight / 2 - 1);
+		int yb = (int) (y - cheight / 2);
 		leftTile = xl / tileSize;
 		rightTile = xr / tileSize;
 		topTile = yt / tileSize;
@@ -116,13 +124,13 @@ public abstract class MapObject {
 			topCollision |= tileMap.getType(topTile, leftTile + i) == TileMap.BLOCKED;
 			bottomCollision |= tileMap.getType(bottomTile, leftTile + i) == TileMap.BLOCKED;
 		}
-		for(int i = 0; i < bottomTile - topTile + 1; i++) {
-			leftCollision |= tileMap.getType(topTile + i, leftTile) == TileMap.BLOCKED;
-			rightCollision |= tileMap.getType(topTile + i, rightTile) == TileMap.BLOCKED;
+		for(int i = 0; i < topTile - bottomTile + 1; i++) {
+			leftCollision |= tileMap.getType(bottomTile + i, leftTile) == TileMap.BLOCKED;
+			rightCollision |= tileMap.getType(bottomTile + i, rightTile) == TileMap.BLOCKED;
 		}
 	}
 	
-	public boolean checkTileMapCollision() {
+	protected boolean checkTileMapCollision() {
 		
 		currCol = (int)x / tileSize;
 		currRow = (int)y / tileSize;
@@ -136,20 +144,20 @@ public abstract class MapObject {
 		boolean collision = false;
 		
 		calculateCollision(x, ydest);
-		if(dy < 0) {
+		if(dy > 0) {
 			if(topCollision) {
 				dy = 0;
-				ytemp = (topTile + 1) * tileSize + cheight / 2;
+				ytemp = (topTile) * tileSize - cheight / 2;
 				collision = true;
 			}
 			else {
 				ytemp += dy;
 			}
 		}
-		if(dy > 0) {
+		if(dy < 0) {
 			if(bottomCollision) {
 				dy = 0;
-				ytemp = bottomTile * tileSize - cheight / 2;
+				ytemp = (bottomTile + 1) * tileSize + cheight / 2;
 				collision = true;
 			}
 			else {
@@ -212,8 +220,10 @@ public abstract class MapObject {
 	public void setUp(boolean b) { up = b; }
 	public void setDown(boolean b) { down = b; }
 	
+	public abstract void update(float dt);
+	
 	public void render(SpriteBatch sb) {
-		sb.draw(animation.getImage(), x - width / 2, y - height / 2);
+		sb.draw(animation.getImage(), (int) (x - width / 2), (int) (y - height / 2), width, height);
 	}
 	
 }

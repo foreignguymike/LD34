@@ -6,16 +6,24 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.distraction.ld34.state.GSM;
 import com.distraction.ld34.state.PlayState;
+import com.distraction.ld34.util.Res;
 
 public class LD34 extends ApplicationAdapter {
 	
 	private SpriteBatch sb;
 	private GSM gsm;
 	
+	private Res res;
+	
 	@Override
 	public void create () {
 		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
+		
+		res = Res.i();
+		res.loadTexture("tileset", "tileset.png");
+		res.loadTexture("player", "player.png");
+		res.loadTexture("farmtiles", "farmtiles.png");
 		
 		sb = new SpriteBatch();
 		gsm = new GSM();
