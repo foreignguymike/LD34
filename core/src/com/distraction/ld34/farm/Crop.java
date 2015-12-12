@@ -7,6 +7,7 @@ public class Crop {
 	
 	private TextureRegion image;
 	
+	private int value;
 	private float x;
 	private float y;
 	private float w;
@@ -14,10 +15,15 @@ public class Crop {
 	
 	public Crop(Seed seed) {
 		image = seed.getType().cropImage;
+		value = seed.getType().value;
 		x = seed.getx();
 		y = seed.gety();
 		w = seed.getw();
 		h = seed.geth();
+	}
+	
+	public int getValue() {
+		return value;
 	}
 	
 	public void render(SpriteBatch sb) {

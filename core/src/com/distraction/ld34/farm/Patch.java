@@ -69,8 +69,19 @@ public class Patch {
 		}
 	}
 	
+	public boolean hasSeed() {
+		return seed != null;
+	}
+	
+	public State getState() {
+		return state;
+	}
+	
 	public boolean seed(Seed seed) {
 		if(state == State.NORMAL) {
+			return false;
+		}
+		if(this.seed != null || crop != null) {
 			return false;
 		}
 		this.seed = seed;
@@ -90,8 +101,8 @@ public class Patch {
 	public Crop harvest() {
 		Crop ret = null;
 		if(crop != null) {
-			image = state.image;
 			state = State.NORMAL;
+			image = state.image;
 			ret = crop;
 			crop = null;
 		}
@@ -99,14 +110,12 @@ public class Patch {
 	}
 	
 	public void update(float dt) {
-		
 		if(seed != null) {
 			seed.update(dt);
 			if(seed.isFinished()) {
 				crop();
 			}
 		}
-		
 	}
 	
 	public void render(SpriteBatch sb) {

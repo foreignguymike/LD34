@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.Vars;
 import com.distraction.ld34.entity.Player;
 import com.distraction.ld34.farm.Patch;
+import com.distraction.ld34.farm.Seed;
 import com.distraction.ld34.tile.TileMap;
 import com.distraction.ld34.util.BoundCamera;
 import com.distraction.ld34.util.Res;
@@ -64,6 +65,15 @@ public class PlayState extends State {
 		}
 		if(Gdx.input.isKeyJustPressed(Keys.D)) {
 			player.seed();
+		}
+		if(Gdx.input.isKeyJustPressed(Keys.F)) {
+			player.harvest();
+		}
+		if(Gdx.input.isKeyJustPressed(Keys.G)) {
+			player.unload();
+		}
+		if(Gdx.input.isKeyJustPressed(Keys.H)) {
+			player.buySeed(Seed.Type.POTATO);
 		}
 		
 		cam.position.set(player.getx(), player.gety(), 0);

@@ -9,16 +9,22 @@ public class Seed {
 	public enum Type {
 		POTATO(new TextureRegion(Res.i().getTexture("farmtiles"), 96, 0, 32, 32),
 				new TextureRegion(Res.i().getTexture("farmtiles"), 0, 32, 32, 32),
-				3);
+				3,
+				14,
+				10);
 		
 		public TextureRegion image;
 		public TextureRegion cropImage;
-		private float requiredTime;
+		public float requiredTime;
+		public int value;
+		public int cost;
 		
-		private Type(TextureRegion image, TextureRegion cropImage, float requiredTime) {
+		private Type(TextureRegion image, TextureRegion cropImage, float requiredTime, int value, int cost) {
 			this.image = image;
 			this.cropImage = cropImage;
 			this.requiredTime = requiredTime;
+			this.value = value;
+			this.cost = cost;
 		}
 	};
 	
