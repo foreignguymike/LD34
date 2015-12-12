@@ -9,6 +9,7 @@ import com.distraction.ld34.Vars;
 import com.distraction.ld34.entity.Player;
 import com.distraction.ld34.farm.Patch;
 import com.distraction.ld34.farm.Seed;
+import com.distraction.ld34.hud.HUD;
 import com.distraction.ld34.tile.TileMap;
 import com.distraction.ld34.util.BoundCamera;
 import com.distraction.ld34.util.Res;
@@ -21,6 +22,8 @@ public class PlayState extends State {
 	private Player player;
 	
 	private Patch[][] farm;
+	
+	private HUD hud;
 	
 	public PlayState(GSM gsm) {
 		super(gsm);
@@ -36,7 +39,7 @@ public class PlayState extends State {
 		cam.setBounds(0, 0, tileMap.getWidth(), tileMap.getHeight());
 		
 		player = new Player(tileMap);
-		player.setPosition(100, 100);
+		player.setPosition(tileMap.getWidth() / 2, tileMap.getHeight() / 2);
 		
 		farm = new Patch[4][10];
 		for(int row = 0; row < farm.length; row++) {
@@ -46,6 +49,8 @@ public class PlayState extends State {
 		}
 		
 		player.setFarm(farm);
+		
+		hud = new HUD(player);
 	}
 	
 	@Override
@@ -98,6 +103,8 @@ public class PlayState extends State {
 			}
 		}
 		player.render(sb);
+		sb.setProjectionMatrix(super.cam.combined);
+		hud.render(sb);
 		sb.end();
 	}
 	

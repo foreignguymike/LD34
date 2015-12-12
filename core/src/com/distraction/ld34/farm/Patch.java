@@ -1,5 +1,6 @@
 package com.distraction.ld34.farm;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.tile.TileMap;
@@ -41,6 +42,7 @@ public class Patch {
 	private Crop crop;
 	
 	private TextureRegion image;
+	private TextureRegion pixel;
 	
 	public Patch(TileMap tileMap, int row, int col) {
 		state = State.NORMAL;
@@ -50,17 +52,26 @@ public class Patch {
 		w = tileSize;
 		h = tileSize;
 		image = state.image;
+		pixel = new TextureRegion(Res.i().getTexture("pixel"));
+	}
+	
+	public boolean canTill() {
+		return state == State.NORMAL && crop == null;
 	}
 	
 	public void till() {
-		if(state == State.NORMAL) {
+		if(canTill()) {
 			state = State.TILLED;
 			image = state.image;
 		}
 	}
 	
+	public boolean canWater() {
+		return state == State.TILLED && crop == null;
+	}
+	
 	public void water() {
-		if(state == State.TILLED) {
+		if(canWater()) {
 			state = State.WATERED;
 			image = state.image;
 			if(seed != null) {
@@ -77,31 +88,41 @@ public class Patch {
 		return state;
 	}
 	
+	public boolean canSeed() {
+		return state != State.NORMAL && seed == null && crop == null;
+	}
+	
 	public boolean seed(Seed seed) {
-		if(state == State.NORMAL) {
-			return false;
+		if(canSeed()) {
+			this.seed = seed;
+			if(state == State.WATERED) {
+				seed.setWatered();
+			}
+			return true;
 		}
-		if(this.seed != null || crop != null) {
-			return false;
-		}
-		this.seed = seed;
-		if(state == State.WATERED) {
-			seed.setWatered();
-		}
-		return true;
+		return false;
+	}
+	
+	public boolean canCrop() {
+		return seed != null;
 	}
 	
 	private void crop() {
-		if(seed != null) {
+		if(canCrop()) {
+			state = State.NORMAL;
+			image = state.image;
 			crop = seed.getCrop();
 			seed = null;
 		}
 	}
 	
+	public boolean canHarvest() {
+		return crop != null;
+	}
+	
 	public Crop harvest() {
 		Crop ret = null;
-		if(crop != null) {
-			state = State.NORMAL;
+		if(canHarvest()) {
 			image = state.image;
 			ret = crop;
 			crop = null;
@@ -126,6 +147,14 @@ public class Patch {
 		if(crop != null) {
 			crop.render(sb);
 		}
+	}
+	
+	public void renderHighlight(SpriteBatch sb) {
+		sb.setColor(Color.BLACK);
+		sb.draw(pixel, x - w / 2, y - h / 2, w, 1);
+		sb.draw(pixel, x - w / 2, y - h / 2, 1, h);
+		sb.draw(pixel, x - w / 2, y + h / 2, w, 1);
+		sb.draw(pixel, x + w / 2, y - h / 2, 1, h);
 	}
 	
 }

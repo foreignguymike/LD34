@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -120,6 +121,7 @@ public class TileMap {
 	}
 	
 	public void render(SpriteBatch sb, OrthographicCamera cam) {
+		sb.setColor(Color.WHITE);
 		rowOffset = (int) ((cam.position.y - cam.viewportHeight / 2) / tileSize);
 		colOffset = (int) ((cam.position.x - cam.viewportWidth / 2) / tileSize);
 		for(int row = rowOffset; row < rowOffset + numRowsToDraw; row++) {

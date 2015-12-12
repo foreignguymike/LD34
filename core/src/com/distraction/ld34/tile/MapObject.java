@@ -2,6 +2,7 @@ package com.distraction.ld34.tile;
 
 import java.awt.Rectangle;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.util.Animation;
@@ -223,6 +224,7 @@ public abstract class MapObject {
 	public abstract void update(float dt);
 	
 	public void render(SpriteBatch sb) {
+		sb.setColor(Color.WHITE);
 		sb.draw(animation.getImage(), (int) (x - width / 2), (int) (y - height / 2), width, height);
 	}
 	

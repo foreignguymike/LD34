@@ -3,7 +3,9 @@ package com.distraction.ld34.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.farm.Crop;
 import com.distraction.ld34.farm.Patch;
@@ -20,6 +22,32 @@ public class Player extends MapObject {
 	private List<Seed.Type> seeds;
 	private int money = 50;
 	
+	private Action action;
+	private int actionRow;
+	private int actionCol;
+	private float actionTime;
+	private float actionTimeRequired;
+	
+	private Seed.Type nextSeedType;
+	
+	private TextureRegion pixel;
+	
+	private Patch selectedPatch;
+	
+	private int row;
+	private int col;
+	
+	public enum Action {
+		TILL(3),
+		WATER(3),
+		SEED(2),
+		HARVEST(1);
+		public float timeRequired;
+		Action(float timeRequired) {
+			this.timeRequired = timeRequired;
+		}
+	};
+	
 	public Player(TileMap tileMap) {
 		super(tileMap);
 		Texture tex = Res.i().getTexture("player");
@@ -32,6 +60,8 @@ public class Player extends MapObject {
 		moveSpeed = 100;
 		crops = new ArrayList<Crop>();
 		seeds = new ArrayList<Seed.Type>();
+		
+		pixel = new TextureRegion(Res.i().getTexture("pixel"));
 	}
 	
 	public void buySeed(Seed.Type type) {
@@ -45,60 +75,96 @@ public class Player extends MapObject {
 		money += amount;
 	}
 	
+	public int getMoney() {
+		return money;
+	}
+	
+	public int getNumSeeds() {
+		return seeds.size();
+	}
+	
 	public void setFarm(Patch[][] farm) {
 		this.farm = farm;
 	}
 	
-	public void till() {
-		int row = (int) (tileMap.getNumRows() - (y / tileSize));
-		int col = (int) (x / tileSize);
-		row -= 3;
-		col -= 5;
-		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
-			return;
-		}
-		farm[row][col].till();
+	public void actionStarted(Action action, int actionRow, int actionCol) {
+		this.action = action;
+		this.actionRow = actionRow;
+		this.actionCol = actionCol;
+		actionTime = 0;
+		actionTimeRequired = action.timeRequired;
 	}
 	
-	public void water() {
-		int row = (int) (tileMap.getNumRows() - (y / tileSize));
-		int col = (int) (x / tileSize);
-		row -= 3;
-		col -= 5;
-		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
-			return;
-		}
-		farm[row][col].water();
-	}
-	
-	public void seed() {
-		int row = (int) (tileMap.getNumRows() - (y / tileSize));
-		int col = (int) (x / tileSize);
-		row -= 3;
-		col -= 5;
-		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
-			return;
-		}
-		Seed.Type nextSeedType = (seeds.isEmpty() || farm[row][col].hasSeed() || farm[row][col].getState() == Patch.State.NORMAL) ? null : seeds.remove(0);
-		if(nextSeedType != null) {
-			farm[row][col].seed(new Seed(nextSeedType,
+	public void actionFinished() {
+		switch(action) {
+		case TILL:
+			farm[actionRow][actionCol].till();
+			break;
+		case WATER:
+			farm[actionRow][actionCol].water();
+			break;
+		case SEED:
+			farm[actionRow][actionCol].seed(new Seed(nextSeedType,
 					tileSize * ((int) (x / tileSize) + 0.5f),
 					tileSize * ((int) (y / tileSize) + 0.5f),
 					32, 32));
+			break;
+		case HARVEST:
+			Crop crop = farm[actionRow][actionCol].harvest();
+			if(crop != null) {
+				crops.add(crop);
+			}
+			break;
+		}
+		action = null;
+	}
+	
+	private void getCurrentTile() {
+		row = (int) (tileMap.getNumRows() - (y / tileSize));
+		col = (int) (x / tileSize);
+		row -= 3;
+		col -= 5;
+	}
+	
+	public void till() {
+		getCurrentTile();
+		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
+			return;
+		}
+		if(farm[row][col].canTill()) {
+			actionStarted(Action.TILL, row, col);
+		}
+	}
+	
+	public void water() {
+		getCurrentTile();
+		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
+			return;
+		}
+		if(farm[row][col].canWater()) {
+			actionStarted(Action.WATER, row, col);
+		}
+	}
+	
+	public void seed() {
+		getCurrentTile();
+		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
+			return;
+		}
+		nextSeedType = (seeds.isEmpty() || farm[row][col].hasSeed() || farm[row][col].getState() == Patch.State.NORMAL) ? null : seeds.remove(0);
+		if(farm[row][col].canSeed() && nextSeedType != null) {
+			actionStarted(Action.SEED, row, col);
 		}
 	}
 	
 	public void harvest() {
-		int row = (int) (tileMap.getNumRows() - (y / tileSize));
-		int col = (int) (x / tileSize);
-		row -= 3;
-		col -= 5;
+		getCurrentTile();
 		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
 			return;
 		}
-		Crop crop = farm[row][col].harvest();
-		if(crop != null) {
-			crops.add(crop);
+		if(farm[row][col].canHarvest()) {
+			System.out.println("harvesting");
+			actionStarted(Action.HARVEST, row, col);
 		}
 	}
 	
@@ -106,35 +172,74 @@ public class Player extends MapObject {
 		for(Crop crop : crops) {
 			addMoney(crop.getValue());
 		}
+		crops.clear();
+	}
+	
+	private void highlightPatch() {
+		int row = (int) (tileMap.getNumRows() - (y / tileSize));
+		int col = (int) (x / tileSize);
+		row -= 3;
+		col -= 5;
+		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
+			selectedPatch = null;
+			return;
+		}
+		selectedPatch = farm[row][col];
 	}
 	
 	@Override
 	public void update(float dt) {
-		System.out.println(money);
-		
-		if(left) {
-			dx = -moveSpeed * dt;
-		}
-		else if(right) {
-			dx = moveSpeed * dt;
+		if(action != null) {
+			actionTime += dt;
+			if(actionTime >= actionTimeRequired) {
+				actionFinished();
+			}
 		}
 		else {
-			dx = 0;
+			if(left) {
+				dx = -moveSpeed * dt;
+			}
+			else if(right) {
+				dx = moveSpeed * dt;
+			}
+			else {
+				dx = 0;
+			}
+			if(down) {
+				dy = -moveSpeed * dt;
+			}
+			else if(up) {
+				dy = moveSpeed * dt;
+			}
+			else {
+				dy = 0;
+			}
+			
+			checkTileMapCollision();
+			x = xtemp;
+			y = ytemp;
+			
+			highlightPatch();
 		}
-		if(down) {
-			dy = -moveSpeed * dt;
+	}
+	
+	@Override
+	public void render(SpriteBatch sb) {
+		super.render(sb);
+		if(selectedPatch != null) {
+			selectedPatch.renderHighlight(sb);
 		}
-		else if(up) {
-			dy = moveSpeed * dt;
+		if(action != null) {
+			Color c = sb.getColor();
+			sb.setColor(Color.GREEN);
+			sb.draw(pixel, x - width / 2, y + height / 2, width * actionTime / actionTimeRequired, 3);
+			sb.setColor(Color.BLACK);
+			sb.draw(pixel, x - width / 2, y + height / 2, width, 1);
+			sb.draw(pixel, x - width / 2, y + height / 2 + 3, width, 1);
+			sb.draw(pixel, x - width / 2, y + height / 2, 1, 4);
+			sb.draw(pixel, x + width / 2, y + height / 2, 1, 4);
+			sb.setColor(c);
 		}
-		else {
-			dy = 0;
-		}
-		
-		checkTileMapCollision();
-		x = xtemp;
-		y = ytemp;
-		
 	}
 	
 }
