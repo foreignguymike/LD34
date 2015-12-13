@@ -8,16 +8,22 @@ public class Animation {
 	private int index;
 	private float interval;
 	private float time;
+	private int numFrames;
 	
 	private int timesPlayed;
 	
 	public void setImages(TextureRegion[] images) {
 		this.images = images;
 		timesPlayed = 0;
+		index = 0;
 	}
 	
 	public void setInterval(float interval) {
 		this.interval = interval;
+	}
+	
+	public void setNumFrames(int numFrames) {
+		this.numFrames = numFrames;
 	}
 	
 	public void update(float dt) {
@@ -28,7 +34,7 @@ public class Animation {
 		while(time >= interval) {
 			time -= interval;
 			index++;
-			if(index == images.length) {
+			if(index == numFrames) {
 				index = 0;
 				timesPlayed++;
 			}
@@ -41,6 +47,10 @@ public class Animation {
 	
 	public boolean hasPlayedOnce() {
 		return timesPlayed >= 1;
+	}
+	
+	public TextureRegion[] getAnimation() {
+		return images;
 	}
 	
 }

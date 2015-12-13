@@ -67,9 +67,10 @@ public abstract class MapObject {
 		animation = new Animation();
 	}
 	
-	protected void setAnimation(TextureRegion[] images, float interval) {
+	protected void setAnimation(TextureRegion[] images, float interval, int numFrames) {
 		animation.setImages(images);
 		animation.setInterval(interval);
+		animation.setNumFrames(numFrames);
 		width = images[0].getRegionWidth();
 		height = images[0].getRegionHeight();
 	}

@@ -26,6 +26,8 @@ public class LD34 extends ApplicationAdapter {
 		res.loadTexture("farmtiles", "farmtiles.png");
 		res.loadTexture("pixel", "pixel.png");
 		res.loadTexture("truck", "truck.png");
+		res.loadFont("font", 8);
+		res.loadFont("fontsmall", 6);
 		
 		sb = new SpriteBatch();
 		gsm = new GSM();

@@ -20,7 +20,8 @@ public class Player extends MapObject {
 	
 	private List<Crop> crops;
 	private List<Seed.Type> seeds;
-	private int money = 50;
+	private int money = Integer.MAX_VALUE;
+	private int totalMoney;
 	
 	private Action action;
 	private int actionRow;
@@ -38,11 +39,17 @@ public class Player extends MapObject {
 	private int row;
 	private int col;
 	
+	private TextureRegion[] idle;
+	private TextureRegion[] moving;
+	private TextureRegion[] tilling;
+	private TextureRegion[] watering;
+	private TextureRegion[] seeding;
+	
 	public enum Action {
-		TILL(3),
-		WATER(3),
-		SEED(2),
-		HARVEST(1);
+		TILLING(3),
+		WATERING(3),
+		SEEDING(2),
+		HARVESTING(1);
 		public float timeRequired;
 		Action(float timeRequired) {
 			this.timeRequired = timeRequired;
@@ -52,9 +59,13 @@ public class Player extends MapObject {
 	public Player(TileMap tileMap) {
 		super(tileMap);
 		Texture tex = Res.i().getTexture("player");
-		TextureRegion[] reg = new TextureRegion[1];
-		reg[0] = new TextureRegion(tex, 0, 0, 32, 32);
-		setAnimation(reg, 0);
+		TextureRegion[][] split = TextureRegion.split(tex, 32, 32);
+		idle = split[0];
+		moving = split[1];
+		tilling = split[2];
+		watering = split[3];
+		seeding = split[4];
+		setAnimation(idle, 0, 1);
 		cwidth = 20;
 		cheight = 20;
 		
@@ -63,6 +74,7 @@ public class Player extends MapObject {
 		seeds = new ArrayList<Seed.Type>();
 		
 		pixel = new TextureRegion(Res.i().getTexture("pixel"));
+		
 	}
 	
 	public void buySeed(Seed.Type type) {
@@ -74,10 +86,15 @@ public class Player extends MapObject {
 	
 	public void addMoney(int amount) {
 		money += amount;
+		totalMoney += amount;
 	}
 	
 	public int getMoney() {
 		return money;
+	}
+	
+	public int getTotalMoney() {
+		return totalMoney;
 	}
 	
 	public int getNumSeeds() {
@@ -96,25 +113,41 @@ public class Player extends MapObject {
 		actionTimeRequired = action.timeRequired * actionSpeedMultipliers[action.ordinal()];
 	}
 	
-	public void upgradeAction(Action action, int level) {
-		actionSpeedMultipliers[action.ordinal()] = level == 2 ? 0.5f : 0;
+	public void upgradeAction(Action action) {
+		float speed = actionSpeedMultipliers[action.ordinal()];
+		int requiredMoney;
+		if(speed == 1) {
+			speed = 0.5f;
+			requiredMoney = 30;
+		}
+		else if(speed == 0.5f) {
+			speed = 0;
+			requiredMoney = 70;
+		}
+		else {
+			return;
+		}
+		if(money >= requiredMoney) {
+			actionSpeedMultipliers[action.ordinal()] = speed;
+		}
 	}
 	
 	public void actionFinished() {
 		switch(action) {
-		case TILL:
+		case TILLING:
 			farm[actionRow][actionCol].till();
 			break;
-		case WATER:
+		case WATERING:
 			farm[actionRow][actionCol].water();
 			break;
-		case SEED:
+		case SEEDING:
 			farm[actionRow][actionCol].seed(new Seed(nextSeedType,
 					tileSize * ((int) (x / tileSize) + 0.5f),
 					tileSize * ((int) (y / tileSize) + 0.5f),
 					32, 32));
+			seeds.remove(0);
 			break;
-		case HARVEST:
+		case HARVESTING:
 			Crop crop = farm[actionRow][actionCol].harvest();
 			if(crop != null) {
 				crops.add(crop);
@@ -137,7 +170,7 @@ public class Player extends MapObject {
 			return;
 		}
 		if(action == null && farm[row][col].canTill()) {
-			actionStarted(Action.TILL, row, col);
+			actionStarted(Action.TILLING, row, col);
 		}
 	}
 	
@@ -147,7 +180,7 @@ public class Player extends MapObject {
 			return;
 		}
 		if(action == null && farm[row][col].canWater()) {
-			actionStarted(Action.WATER, row, col);
+			actionStarted(Action.WATERING, row, col);
 		}
 	}
 	
@@ -156,9 +189,9 @@ public class Player extends MapObject {
 		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
 			return;
 		}
-		nextSeedType = (seeds.isEmpty() || farm[row][col].hasSeed() || farm[row][col].getState() == Patch.State.NORMAL) ? null : seeds.remove(0);
+		nextSeedType = (seeds.isEmpty() || farm[row][col].hasSeed() || farm[row][col].getState() == Patch.State.NORMAL) ? null : seeds.get(0);
 		if(action == null && farm[row][col].canSeed() && nextSeedType != null) {
-			actionStarted(Action.SEED, row, col);
+			actionStarted(Action.SEEDING, row, col);
 		}
 	}
 	
@@ -168,12 +201,14 @@ public class Player extends MapObject {
 			return;
 		}
 		if(action == null && farm[row][col].canHarvest()) {
-			System.out.println("harvesting");
-			actionStarted(Action.HARVEST, row, col);
+			actionStarted(Action.HARVESTING, row, col);
 		}
 	}
 	
 	public void unload() {
+		if(crops.isEmpty()) {
+			return;
+		}
 		for(Crop crop : crops) {
 			addMoney(crop.getValue());
 		}
@@ -182,6 +217,15 @@ public class Player extends MapObject {
 	
 	public int getNumCrops() {
 		return crops.size();
+	}
+	
+	public Action getAction() {
+		return action;
+	}
+	
+	public int getLevel(Action action) {
+		float speed = actionSpeedMultipliers[action.ordinal()];
+		return speed == 1 ? 1 : speed == 0.5f ? 2 : 3; 
 	}
 	
 	private void highlightPatch() {
@@ -230,6 +274,38 @@ public class Player extends MapObject {
 			
 			highlightPatch();
 		}
+		
+		if(action == Action.TILLING) {
+			if(animation.getAnimation() != tilling) {
+				setAnimation(tilling, 0.3f, 2);
+			}
+		}
+		else if(action == Action.WATERING) {
+			if(animation.getAnimation() != watering) {
+				setAnimation(watering, 0.1f, 2);
+			}
+		}
+		else if(action == Action.SEEDING) {
+			if(animation.getAnimation() != seeding) {
+				setAnimation(seeding, 0.1f, 2);
+			}
+		}
+		else if(action == Action.HARVESTING) {
+			if(animation.getAnimation() != idle) {
+				setAnimation(idle, 0, 1);
+			}
+		}
+		else if(left || right || up || down) {
+			if(animation.getAnimation() != moving) {
+				setAnimation(moving, 0.1f, 4);
+			}
+		}
+		else {
+			if(animation.getAnimation() != idle) {
+				setAnimation(idle, 0, 1);
+			}
+		}
+		animation.update(dt);
 	}
 	
 	@Override

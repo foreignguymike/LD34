@@ -9,7 +9,6 @@ import com.distraction.ld34.Vars;
 import com.distraction.ld34.entity.Player;
 import com.distraction.ld34.entity.Truck;
 import com.distraction.ld34.farm.Patch;
-import com.distraction.ld34.farm.Seed;
 import com.distraction.ld34.hud.HUD;
 import com.distraction.ld34.tile.TileMap;
 import com.distraction.ld34.util.BoundCamera;
@@ -44,7 +43,7 @@ public class PlayState extends State {
 		cam.setBounds(0, 0, tileMap.getWidth(), tileMap.getHeight());
 		
 		player = new Player(tileMap);
-		player.setPosition(tileMap.getWidth() / 2, tileMap.getHeight() / 2);
+		player.setPosition(tileMap.getWidth() / 2, tileMap.getHeight() / 2 - 64);
 		
 		farm = new Patch[4][10];
 		for(int row = 0; row < farm.length; row++) {
@@ -58,7 +57,7 @@ public class PlayState extends State {
 		hud = new HUD(player);
 		
 		truck = new Truck(tileMap);
-		truck.setPosition(450, 170);
+		truck.setPosition(450, 106);
 	}
 	
 	@Override
@@ -85,14 +84,17 @@ public class PlayState extends State {
 		if(Gdx.input.isKeyJustPressed(Keys.NUM_4)) {
 			player.harvest();
 		}
-		if(Gdx.input.isKeyJustPressed(Keys.NUM_5)) {
-			if(player.intersects(truck)) {
-				player.unload();
-			}
+		if(player.intersects(truck)) {
+			player.unload();
 		}
 		
 		if(Gdx.input.isKeyJustPressed(Keys.H)) {
-			player.buySeed(Seed.Type.POTATO);
+			gsm.push(new HelpState(gsm));
+			return;
+		}
+		if(Gdx.input.isKeyJustPressed(Keys.S) && player.getAction() == null) {
+			gsm.push(new ShopState(gsm, player));
+			return;
 		}
 		
 		cam.position.set(player.getx(), player.gety(), 0);

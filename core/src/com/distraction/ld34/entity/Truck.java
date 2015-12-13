@@ -11,7 +11,7 @@ public class Truck extends MapObject {
 		super(tileMap);
 		TextureRegion[] reg = new TextureRegion[1];
 		reg[0] = new TextureRegion(Res.i().getTexture("truck"));
-		setAnimation(reg, 0);
+		setAnimation(reg, 0, 1);
 		cwidth = width;
 		cheight = height;
 	}
