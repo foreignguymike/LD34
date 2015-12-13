@@ -130,6 +130,7 @@ public class Seed {
 		if(watered) {
 			time += dt;
 			if(time >= requiredTime) {
+				Res.i().getSound("crop").play(0.5f);
 				finished = true;
 			}
 		}

@@ -58,6 +58,10 @@ public class PlayState extends State {
 		
 		truck = new Truck(tileMap);
 		truck.setPosition(450, 106);
+		
+		Res.i().getMusic("ld34").setLooping(true);
+		Res.i().getMusic("ld34").setVolume(0.6f);
+		Res.i().getMusic("ld34").play();
 	}
 	
 	@Override
@@ -93,6 +97,7 @@ public class PlayState extends State {
 		}
 		if(player.intersects(truck)) {
 			if(player.unload()) {
+				Res.i().getSound("money").play(0.5f);
 				truck.setShowing();
 			}
 		}

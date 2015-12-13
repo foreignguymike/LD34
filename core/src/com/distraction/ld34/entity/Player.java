@@ -166,6 +166,7 @@ public class Player extends MapObject {
 			}
 			break;
 		}
+		Res.i().getSound("plink").play(0.4f);
 		action = null;
 	}
 	

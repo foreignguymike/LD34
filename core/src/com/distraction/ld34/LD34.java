@@ -29,6 +29,13 @@ public class LD34 extends ApplicationAdapter {
 		res.loadFont("font", 8);
 		res.loadFont("fontsmall", 6);
 		res.loadFont("fontlarge", 16);
+		res.loadMusic("ld34", "ld34.mp3");
+		res.loadSound("plink", "plink.wav");
+		res.loadSound("crop", "crop.wav");
+		res.loadSound("select", "select.wav");
+		res.loadSound("select_move", "select_move.wav");
+		res.loadSound("select_fail", "select_fail.wav");
+		res.loadSound("money", "money.wav");
 		
 		sb = new SpriteBatch();
 		gsm = new GSM();

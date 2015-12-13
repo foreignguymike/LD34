@@ -58,21 +58,25 @@ public class ShopState extends State {
 		else {
 			if(Gdx.input.isKeyJustPressed(Keys.RIGHT)) {
 				if(currentCol < 3) {
+					Res.i().getSound("select_move").play(0.7f);
 					currentCol++;
 				}
 			}
 			if(Gdx.input.isKeyJustPressed(Keys.LEFT)) {
 				if(currentCol > 0) {
+					Res.i().getSound("select_move").play(0.7f);
 					currentCol--;
 				}
 			}
 			if(Gdx.input.isKeyJustPressed(Keys.UP)) {
 				if(currentRow > 0) {
+					Res.i().getSound("select_move").play(0.7f);
 					currentRow--;
 				}
 			}
 			if(Gdx.input.isKeyJustPressed(Keys.DOWN)) {
 				if(currentRow < 2) {
+					Res.i().getSound("select_move").play(0.7f);
 					currentRow++;
 				}
 			}
@@ -119,10 +123,12 @@ public class ShopState extends State {
 					ok = player.upgradeAction(Player.Action.HARVESTING);
 				}
 				if(ok) {
+					Res.i().getSound("select").play(0.5f);
 					popupText = "Bought item!";
 					showingPopup = true;
 				}
 				else {
+					Res.i().getSound("select_fail").play(0.8f);
 					popupText = "Not enough money!";
 					showingPopup = true;
 				}
