@@ -25,6 +25,7 @@ public class LD34 extends ApplicationAdapter {
 		res.loadTexture("player", "player.png");
 		res.loadTexture("farmtiles", "farmtiles.png");
 		res.loadTexture("pixel", "pixel.png");
+		res.loadTexture("truck", "truck.png");
 		
 		sb = new SpriteBatch();
 		gsm = new GSM();

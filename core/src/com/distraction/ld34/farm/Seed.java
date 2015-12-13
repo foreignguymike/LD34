@@ -1,5 +1,6 @@
 package com.distraction.ld34.farm;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.util.Res;
@@ -9,7 +10,7 @@ public class Seed {
 	public enum Type {
 		POTATO(new TextureRegion(Res.i().getTexture("farmtiles"), 96, 0, 32, 32),
 				new TextureRegion(Res.i().getTexture("farmtiles"), 0, 32, 32, 32),
-				3,
+				1,
 				14,
 				10);
 		
@@ -41,6 +42,7 @@ public class Seed {
 	private boolean finished;
 	
 	private TextureRegion image;
+	private TextureRegion pixel;
 	
 	public Seed(Type type, float x, float y, float w, float h) {
 		this.type = type;
@@ -51,6 +53,8 @@ public class Seed {
 		image = type.image;
 		requiredTime = type.requiredTime;
 		crop = new Crop(this);
+		
+		pixel = new TextureRegion(Res.i().getTexture("pixel"));
 	}
 	
 	public float getx() {
@@ -96,6 +100,17 @@ public class Seed {
 	
 	public void render(SpriteBatch sb) {
 		sb.draw(image, x - w / 2, y - h / 2);
+		if(watered) {
+			Color c = sb.getColor();
+			sb.setColor(Color.GREEN);
+			sb.draw(pixel, x - w / 2, y + h / 2, w * time / requiredTime, 3);
+			sb.setColor(Color.BLACK);
+			sb.draw(pixel, x - w / 2, y + h / 2, w, 1);
+			sb.draw(pixel, x - w / 2, y + h / 2 + 3, w, 1);
+			sb.draw(pixel, x - w / 2, y + h / 2, 1, 4);
+			sb.draw(pixel, x + w / 2, y + h / 2, 1, 4);
+			sb.setColor(c);
+		}
 	}
 	
 }

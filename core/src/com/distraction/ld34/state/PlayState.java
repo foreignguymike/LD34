@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.distraction.ld34.Vars;
 import com.distraction.ld34.entity.Player;
+import com.distraction.ld34.entity.Truck;
 import com.distraction.ld34.farm.Patch;
 import com.distraction.ld34.farm.Seed;
 import com.distraction.ld34.hud.HUD;
@@ -24,6 +25,10 @@ public class PlayState extends State {
 	private Patch[][] farm;
 	
 	private HUD hud;
+	
+	private float globalTime;
+	
+	private Truck truck;
 	
 	public PlayState(GSM gsm) {
 		super(gsm);
@@ -51,10 +56,16 @@ public class PlayState extends State {
 		player.setFarm(farm);
 		
 		hud = new HUD(player);
+		
+		truck = new Truck(tileMap);
+		truck.setPosition(450, 170);
 	}
 	
 	@Override
 	public void update(float dt) {
+		
+		globalTime += 2880 * dt;
+		hud.setGlobalTime(globalTime);
 		
 		player.setLeft(Gdx.input.isKeyPressed(Keys.LEFT));
 		player.setRight(Gdx.input.isKeyPressed(Keys.RIGHT));
@@ -62,21 +73,24 @@ public class PlayState extends State {
 		player.setDown(Gdx.input.isKeyPressed(Keys.DOWN));
 		player.update(dt);
 		
-		if(Gdx.input.isKeyJustPressed(Keys.A)) {
+		if(Gdx.input.isKeyJustPressed(Keys.NUM_1)) {
 			player.till();
 		}
-		if(Gdx.input.isKeyJustPressed(Keys.S)) {
+		if(Gdx.input.isKeyJustPressed(Keys.NUM_2)) {
 			player.water();
 		}
-		if(Gdx.input.isKeyJustPressed(Keys.D)) {
+		if(Gdx.input.isKeyJustPressed(Keys.NUM_3)) {
 			player.seed();
 		}
-		if(Gdx.input.isKeyJustPressed(Keys.F)) {
+		if(Gdx.input.isKeyJustPressed(Keys.NUM_4)) {
 			player.harvest();
 		}
-		if(Gdx.input.isKeyJustPressed(Keys.G)) {
-			player.unload();
+		if(Gdx.input.isKeyJustPressed(Keys.NUM_5)) {
+			if(player.intersects(truck)) {
+				player.unload();
+			}
 		}
+		
 		if(Gdx.input.isKeyJustPressed(Keys.H)) {
 			player.buySeed(Seed.Type.POTATO);
 		}
@@ -103,6 +117,7 @@ public class PlayState extends State {
 			}
 		}
 		player.render(sb);
+		truck.render(sb);
 		sb.setProjectionMatrix(super.cam.combined);
 		hud.render(sb);
 		sb.end();

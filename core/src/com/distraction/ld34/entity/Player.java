@@ -27,6 +27,7 @@ public class Player extends MapObject {
 	private int actionCol;
 	private float actionTime;
 	private float actionTimeRequired;
+	private float[] actionSpeedMultipliers = {1, 1, 1, 1};
 	
 	private Seed.Type nextSeedType;
 	
@@ -92,7 +93,11 @@ public class Player extends MapObject {
 		this.actionRow = actionRow;
 		this.actionCol = actionCol;
 		actionTime = 0;
-		actionTimeRequired = action.timeRequired;
+		actionTimeRequired = action.timeRequired * actionSpeedMultipliers[action.ordinal()];
+	}
+	
+	public void upgradeAction(Action action, int level) {
+		actionSpeedMultipliers[action.ordinal()] = level == 2 ? 0.5f : 0;
 	}
 	
 	public void actionFinished() {
@@ -131,7 +136,7 @@ public class Player extends MapObject {
 		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
 			return;
 		}
-		if(farm[row][col].canTill()) {
+		if(action == null && farm[row][col].canTill()) {
 			actionStarted(Action.TILL, row, col);
 		}
 	}
@@ -141,7 +146,7 @@ public class Player extends MapObject {
 		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
 			return;
 		}
-		if(farm[row][col].canWater()) {
+		if(action == null && farm[row][col].canWater()) {
 			actionStarted(Action.WATER, row, col);
 		}
 	}
@@ -152,7 +157,7 @@ public class Player extends MapObject {
 			return;
 		}
 		nextSeedType = (seeds.isEmpty() || farm[row][col].hasSeed() || farm[row][col].getState() == Patch.State.NORMAL) ? null : seeds.remove(0);
-		if(farm[row][col].canSeed() && nextSeedType != null) {
+		if(action == null && farm[row][col].canSeed() && nextSeedType != null) {
 			actionStarted(Action.SEED, row, col);
 		}
 	}
@@ -162,7 +167,7 @@ public class Player extends MapObject {
 		if(row < 0 || row >= farm.length || col < 0 || col >= farm[0].length) {
 			return;
 		}
-		if(farm[row][col].canHarvest()) {
+		if(action == null && farm[row][col].canHarvest()) {
 			System.out.println("harvesting");
 			actionStarted(Action.HARVEST, row, col);
 		}
@@ -173,6 +178,10 @@ public class Player extends MapObject {
 			addMoney(crop.getValue());
 		}
 		crops.clear();
+	}
+	
+	public int getNumCrops() {
+		return crops.size();
 	}
 	
 	private void highlightPatch() {
