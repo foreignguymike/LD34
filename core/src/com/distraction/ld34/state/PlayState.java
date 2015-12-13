@@ -66,6 +66,13 @@ public class PlayState extends State {
 		globalTime += 2880 * dt;
 		hud.setGlobalTime(globalTime);
 		
+		if(player.getTotalMoney() >= Vars.NUM_MONEY_REQUIRED) {
+			gsm.set(new WinState(gsm));
+		}
+		if(globalTime >= Vars.NUM_SECONDS) {
+			gsm.set(new GameOverState(gsm));
+		}
+		
 		player.setLeft(Gdx.input.isKeyPressed(Keys.LEFT));
 		player.setRight(Gdx.input.isKeyPressed(Keys.RIGHT));
 		player.setUp(Gdx.input.isKeyPressed(Keys.UP));
@@ -85,7 +92,9 @@ public class PlayState extends State {
 			player.harvest();
 		}
 		if(player.intersects(truck)) {
-			player.unload();
+			if(player.unload()) {
+				truck.setShowing();
+			}
 		}
 		
 		if(Gdx.input.isKeyJustPressed(Keys.H)) {
@@ -105,6 +114,8 @@ public class PlayState extends State {
 				farm[row][col].update(dt);
 			}
 		}
+		
+		truck.update(dt);
 		
 	}
 	

@@ -6,14 +6,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.distraction.ld34.Vars;
 import com.distraction.ld34.entity.Player;
+import com.distraction.ld34.entity.Player.Action;
 import com.distraction.ld34.farm.Seed;
 import com.distraction.ld34.util.Res;
 
 public class ShopState extends State {
 	
 	private TextureRegion pixel;
-	private TextureRegion[][] crops;
+	private Seed.Type[][] crops;
 	
 	private Player player;
 	private int currentRow;
@@ -22,21 +24,24 @@ public class ShopState extends State {
 	private BitmapFont fontSmall;
 	private BitmapFont font;
 	
+	private boolean showingPopup;
+	private String popupText;
+	
 	public ShopState(GSM gsm, Player player) {
 		super(gsm);
 		
 		this.player = player;
 		
 		pixel = new TextureRegion(Res.i().getTexture("pixel"));
-		crops = new TextureRegion[2][4];
-		crops[0][0] = Seed.Type.POTATO.cropImage;
-		crops[0][1] = Seed.Type.CORN.cropImage;
-		crops[0][2] = Seed.Type.TOMATO.cropImage;
-		crops[0][3] = Seed.Type.WHEAT.cropImage;
-		crops[1][0] = Seed.Type.CABBAGE.cropImage;
-		crops[1][1] = Seed.Type.ORANGE.cropImage;
-		crops[1][2] = Seed.Type.GRAPES.cropImage;
-		crops[1][3] = Seed.Type.CHERRIES.cropImage;
+		crops = new Seed.Type[2][4];
+		crops[0][0] = Seed.Type.POTATO;
+		crops[0][1] = Seed.Type.CORN;
+		crops[0][2] = Seed.Type.TOMATO;
+		crops[0][3] = Seed.Type.WHEAT;
+		crops[1][0] = Seed.Type.CABBAGE;
+		crops[1][1] = Seed.Type.ORANGE;
+		crops[1][2] = Seed.Type.GRAPES;
+		crops[1][3] = Seed.Type.CHERRIES;
 		
 		fontSmall = Res.i().getFont("fontsmall");
 		font = Res.i().getFont("font");
@@ -44,69 +49,85 @@ public class ShopState extends State {
 	
 	@Override
 	public void update(float dt) {
-		if(Gdx.input.isKeyJustPressed(Keys.RIGHT)) {
-			if(currentCol < 3) {
-				currentCol++;
-			}
-		}
-		if(Gdx.input.isKeyJustPressed(Keys.LEFT)) {
-			if(currentCol > 0) {
-				currentCol--;
-			}
-		}
-		if(Gdx.input.isKeyJustPressed(Keys.UP)) {
-			if(currentRow > 0) {
-				currentRow--;
-			}
-		}
-		if(Gdx.input.isKeyJustPressed(Keys.DOWN)) {
-			if(currentRow < 2) {
-				currentRow++;
-			}
-		}
 		
-		if(Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
-			gsm.pop();
-		}
-		if(Gdx.input.isKeyJustPressed(Keys.ENTER)) {
-			if(currentRow == 0 && currentCol == 0) {
-				player.buySeed(Seed.Type.POTATO);
-			}
-			if(currentRow == 0 && currentCol == 1) {
-				player.buySeed(Seed.Type.CORN);
-			}
-			if(currentRow == 0 && currentCol == 2) {
-				player.buySeed(Seed.Type.TOMATO);
-			}
-			if(currentRow == 0 && currentCol == 3) {
-				player.buySeed(Seed.Type.WHEAT);
-			}
-			if(currentRow == 1 && currentCol == 0) {
-				player.buySeed(Seed.Type.CABBAGE);
-			}
-			if(currentRow == 1 && currentCol == 1) {
-				player.buySeed(Seed.Type.ORANGE);
-			}
-			if(currentRow == 1 && currentCol == 2) {
-				player.buySeed(Seed.Type.GRAPES);
-			}
-			if(currentRow == 1 && currentCol == 3) {
-				player.buySeed(Seed.Type.CHERRIES);
-			}
-			if(currentRow == 2 && currentCol == 0) {
-				player.upgradeAction(Player.Action.TILLING);
-			}
-			if(currentRow == 2 && currentCol == 1) {
-				player.upgradeAction(Player.Action.WATERING);
-			}
-			if(currentRow == 2 && currentCol == 2) {
-				player.upgradeAction(Player.Action.SEEDING);
-			}
-			if(currentRow == 2 && currentCol == 3) {
-				player.upgradeAction(Player.Action.HARVESTING);
+		if(showingPopup) {
+			if(Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+				showingPopup = false;
 			}
 		}
-
+		else {
+			if(Gdx.input.isKeyJustPressed(Keys.RIGHT)) {
+				if(currentCol < 3) {
+					currentCol++;
+				}
+			}
+			if(Gdx.input.isKeyJustPressed(Keys.LEFT)) {
+				if(currentCol > 0) {
+					currentCol--;
+				}
+			}
+			if(Gdx.input.isKeyJustPressed(Keys.UP)) {
+				if(currentRow > 0) {
+					currentRow--;
+				}
+			}
+			if(Gdx.input.isKeyJustPressed(Keys.DOWN)) {
+				if(currentRow < 2) {
+					currentRow++;
+				}
+			}
+			
+			if(Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
+				gsm.pop();
+			}
+			if(Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+				boolean ok = false;
+				if(currentRow == 0 && currentCol == 0) {
+					ok = player.buySeed(Seed.Type.POTATO);
+				}
+				else if(currentRow == 0 && currentCol == 1) {
+					ok = player.buySeed(Seed.Type.CORN);
+				}
+				else if(currentRow == 0 && currentCol == 2) {
+					ok = player.buySeed(Seed.Type.TOMATO);
+				}
+				else if(currentRow == 0 && currentCol == 3) {
+					ok = player.buySeed(Seed.Type.WHEAT);
+				}
+				else if(currentRow == 1 && currentCol == 0) {
+					ok = player.buySeed(Seed.Type.CABBAGE);
+				}
+				else if(currentRow == 1 && currentCol == 1) {
+					ok = player.buySeed(Seed.Type.ORANGE);
+				}
+				else if(currentRow == 1 && currentCol == 2) {
+					ok = player.buySeed(Seed.Type.GRAPES);
+				}
+				else if(currentRow == 1 && currentCol == 3) {
+					ok = player.buySeed(Seed.Type.CHERRIES);
+				}
+				else if(currentRow == 2 && currentCol == 0) {
+					ok = player.upgradeAction(Player.Action.TILLING);
+				}
+				else if(currentRow == 2 && currentCol == 1) {
+					ok = player.upgradeAction(Player.Action.WATERING);
+				}
+				else if(currentRow == 2 && currentCol == 2) {
+					ok = player.upgradeAction(Player.Action.SEEDING);
+				}
+				else if(currentRow == 2 && currentCol == 3) {
+					ok = player.upgradeAction(Player.Action.HARVESTING);
+				}
+				if(ok) {
+					popupText = "Bought item!";
+					showingPopup = true;
+				}
+				else {
+					popupText = "Not enough money!";
+					showingPopup = true;
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -116,23 +137,50 @@ public class ShopState extends State {
 		sb.setColor(Color.WHITE);
 		for(int row = 0; row < crops.length; row++) {
 			for(int col = 0; col < crops[0].length; col++) {
-				sb.draw(crops[row][col], 100 * col + 34, 100 * (2 - row) + 34);
+				sb.draw(crops[row][col].cropImage, 100 * col + 34, 100 * (2 - row) + 40);
+				font.draw(sb, "$" + crops[row][col].cost, 100 * col + (crops[row][col].cost < 100 ? 37 : 30), 100 * (2 - row) + 40);
 			}
 		}
 		
-		fontSmall.draw(sb, "Upgrade", 26, 60);
-		fontSmall.draw(sb, "Tilling", 26, 50);
-		fontSmall.draw(sb, "Upgrade", 126, 60);
-		fontSmall.draw(sb, "Watering", 123, 50);
-		fontSmall.draw(sb, "Upgrade", 226, 60);
-		fontSmall.draw(sb, "Seeding", 226, 50);
-		fontSmall.draw(sb, "Upgrade", 326, 60);
-		fontSmall.draw(sb, "Harvest", 326, 50);
+		fontSmall.draw(sb, "Upgrade", 26, 70);
+		fontSmall.draw(sb, "Tilling", 26, 60);
+		int cost = player.getActionCost(Action.TILLING);
+		font.draw(sb, cost < 0 ? "MAXED" : "$" + cost, cost < 0 ? 28 : cost < 100 ? 35 : 32, 45);
+		fontSmall.draw(sb, "Upgrade", 126, 70);
+		fontSmall.draw(sb, "Watering", 123, 60);
+		cost = player.getActionCost(Action.WATERING);
+		font.draw(sb, cost < 0 ? "MAXED" : "$" + cost, cost < 0 ? 128 : cost < 100 ? 135 : 132, 45);
+		fontSmall.draw(sb, "Upgrade", 226, 70);
+		fontSmall.draw(sb, "Seeding", 226, 60);
+		cost = player.getActionCost(Action.SEEDING);
+		font.draw(sb, cost < 0 ? "MAXED" : "$" + cost, cost < 0 ? 228 : cost < 100 ? 235 : 232, 45);
+		fontSmall.draw(sb, "Upgrade", 326, 70);
+		fontSmall.draw(sb, "Harvest", 326, 60);
+		cost = player.getActionCost(Action.HARVESTING);
+		font.draw(sb, cost < 0 ? "MAXED" : "$" + cost, cost < 0 ? 328 : cost < 100 ? 335 : 332, 45);
+		
 		sb.draw(pixel, 100 * currentCol + 20, 100 * (3 - currentRow) - 20, 60, 1);
 		sb.draw(pixel, 100 * currentCol + 20, 100 * (2 - currentRow) + 20, 60, 1);
 		sb.draw(pixel, 100 * currentCol + 20, 100 * (2 - currentRow) + 20, 1, 60);
 		sb.draw(pixel, 100 * (currentCol + 1) - 20, 100 * (2 - currentRow) + 20, 1, 60);
 		
+		if(showingPopup) {
+			sb.setColor(Color.BLACK);
+			sb.draw(pixel, Vars.WIDTH / 2 - 100, Vars.HEIGHT / 2 - 25, 200, 50);
+			sb.setColor(Color.WHITE);
+			sb.draw(pixel, Vars.WIDTH / 2 - 100, Vars.HEIGHT / 2 - 25, 200, 1);
+			sb.draw(pixel, Vars.WIDTH / 2 - 100, Vars.HEIGHT / 2 - 25, 1, 50);
+			sb.draw(pixel, Vars.WIDTH / 2 - 100, Vars.HEIGHT / 2 + 25, 200, 1);
+			sb.draw(pixel, Vars.WIDTH / 2 + 100, Vars.HEIGHT / 2 - 25, 1, 50);
+			if(popupText.equals("Not enough money!")) {
+				font.draw(sb, popupText, 127, 154);
+			}
+			else {
+				font.draw(sb, popupText, 147, 154);
+			}
+		}
+		
+		font.draw(sb, "Money: $" + player.getMoney(), 10, Vars.HEIGHT - 10);
 		font.draw(sb, "Enter to buy. Escape to return to game.", 30, 20);
 		sb.end();
 	}

@@ -68,11 +68,11 @@ public class HUD {
 		}
 		builder.append(second);
 		font.draw(sb, builder.toString(), 10, Vars.HEIGHT - 10);
-		font.draw(sb, "Money: " + player.getMoney(), 200, 65);
+		font.draw(sb, "Money: $" + player.getMoney(), 200, 65);
 		font.draw(sb, "# of Seeds: " + player.getNumSeeds(), 200, 50);
 		font.draw(sb, "# of Crops: " + player.getNumCrops(), 200, 35);
-		font.draw(sb, "Total profit: " + player.getTotalMoney(), 200, 20);
-		font.draw(sb, "30 day goal: $10000 total profit", 10, 85);
+		font.draw(sb, "Total profit: $" + player.getTotalMoney(), 200, 20);
+		font.draw(sb, Vars.NUM_DAYS + " day goal: $" + Vars.NUM_MONEY_REQUIRED + " total profit", 10, 85);
 		font.draw(sb, "H for help", Vars.WIDTH - 100, Vars.HEIGHT - 10);
 		font.draw(sb, "S for shop", Vars.WIDTH - 100, Vars.HEIGHT - 25);
 	}

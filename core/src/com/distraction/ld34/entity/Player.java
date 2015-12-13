@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.distraction.ld34.Vars;
 import com.distraction.ld34.farm.Crop;
 import com.distraction.ld34.farm.Patch;
 import com.distraction.ld34.farm.Seed;
@@ -20,7 +21,7 @@ public class Player extends MapObject {
 	
 	private List<Crop> crops;
 	private List<Seed.Type> seeds;
-	private int money = Integer.MAX_VALUE;
+	private int money = 0;
 	private int totalMoney;
 	
 	private Action action;
@@ -74,14 +75,19 @@ public class Player extends MapObject {
 		seeds = new ArrayList<Seed.Type>();
 		
 		pixel = new TextureRegion(Res.i().getTexture("pixel"));
+		for(int i = 0; i < Vars.NUM_SEEDS_START; i++) {
+			seeds.add(Seed.Type.POTATO);
+		}
 		
 	}
 	
-	public void buySeed(Seed.Type type) {
+	public boolean buySeed(Seed.Type type) {
 		if(money >= type.cost) {
 			money -= type.cost;
 			seeds.add(type);
+			return true;
 		}
+		return false;
 	}
 	
 	public void addMoney(int amount) {
@@ -105,6 +111,11 @@ public class Player extends MapObject {
 		this.farm = farm;
 	}
 	
+	public int getActionCost(Action action) {
+		float speed = actionSpeedMultipliers[action.ordinal()];
+		return speed == 1 ? 50 : speed == 0.7f ? 100 : -1;
+	}
+	
 	public void actionStarted(Action action, int actionRow, int actionCol) {
 		this.action = action;
 		this.actionRow = actionRow;
@@ -113,23 +124,24 @@ public class Player extends MapObject {
 		actionTimeRequired = action.timeRequired * actionSpeedMultipliers[action.ordinal()];
 	}
 	
-	public void upgradeAction(Action action) {
+	public boolean upgradeAction(Action action) {
 		float speed = actionSpeedMultipliers[action.ordinal()];
-		int requiredMoney;
+		int requiredMoney = getActionCost(action);
 		if(speed == 1) {
-			speed = 0.5f;
-			requiredMoney = 30;
+			speed = 0.7f;
 		}
-		else if(speed == 0.5f) {
-			speed = 0;
-			requiredMoney = 70;
+		else if(speed == 0.7f) {
+			speed = 0.4f;
 		}
 		else {
-			return;
+			return false;
 		}
 		if(money >= requiredMoney) {
 			actionSpeedMultipliers[action.ordinal()] = speed;
+			money -= requiredMoney;
+			return true;
 		}
+		return false;
 	}
 	
 	public void actionFinished() {
@@ -205,14 +217,15 @@ public class Player extends MapObject {
 		}
 	}
 	
-	public void unload() {
+	public boolean unload() {
 		if(crops.isEmpty()) {
-			return;
+			return false;
 		}
 		for(Crop crop : crops) {
 			addMoney(crop.getValue());
 		}
 		crops.clear();
+		return true;
 	}
 	
 	public int getNumCrops() {
@@ -225,7 +238,7 @@ public class Player extends MapObject {
 	
 	public int getLevel(Action action) {
 		float speed = actionSpeedMultipliers[action.ordinal()];
-		return speed == 1 ? 1 : speed == 0.5f ? 2 : 3; 
+		return speed == 1 ? 1 : speed == 0.7f ? 2 : 3; 
 	}
 	
 	private void highlightPatch() {

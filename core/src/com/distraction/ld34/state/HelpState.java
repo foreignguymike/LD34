@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.distraction.ld34.Vars;
+import com.distraction.ld34.farm.Seed;
 import com.distraction.ld34.util.Res;
 
 public class HelpState extends State {
@@ -18,7 +19,15 @@ public class HelpState extends State {
 	
 	@Override
 	public void update(float dt) {
-		if(Gdx.input.isKeyJustPressed(Keys.ANY_KEY)) {
+		if(Gdx.input.isKeyPressed(Keys.DOWN)) {
+			cam.position.y -= 100 * dt;
+			cam.update();
+		}
+		else if(Gdx.input.isKeyPressed(Keys.UP)) {
+			cam.position.y += 100 * dt;
+			cam.update();
+		}
+		else if(Gdx.input.isKeyJustPressed(Keys.ANY_KEY)) {
 			gsm.pop();
 		}
 	}
@@ -28,7 +37,7 @@ public class HelpState extends State {
 		sb.setProjectionMatrix(cam.combined);
 		sb.begin();
 		int height = Vars.HEIGHT - 10;
-		font.draw(sb, "The goal is to reach $10000 in total profits", 10, height -= 15);
+		font.draw(sb, "The goal is to reach $" + Vars.NUM_MONEY_REQUIRED + " in total profits", 10, height -= 15);
 		font.draw(sb, "from crops.", 10, height -= 15);
 		
 		font.draw(sb, "To grow crops, you must (1) till the land,", 10, height -= 25);
@@ -42,7 +51,9 @@ public class HelpState extends State {
 		font.draw(sb, "You start with 10 potato seeds.", 10, height -= 15);
 		
 		font.draw(sb, "Crop Info:", 10, height -= 25);
-		font.draw(sb, "Potato - 1 day, $14 value, $10 cost", 10, height -= 15);
+		for(Seed.Type type : Seed.types) {
+			font.draw(sb, type.toString() + " - " + (float) Math.round((type.requiredTime / 30) * 100.0) / 100.0f + " days, $" + type.value + " value, $" + type.cost + " cost", 10, height -= 15);
+		}
 		sb.end();
 	}
 	
